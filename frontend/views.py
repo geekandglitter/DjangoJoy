@@ -51,8 +51,8 @@ def admin_api(request):
         t = request_by_year(enddate, startdate)
         accum_list = accum_list + t      
     
-    sorteditems = sorted(accum_list, key=itemgetter('title'))  
-    sorteditems.reverse()
+    sorteditems = accum_list
+    #sorteditems.reverse()
    
     
     counter = 0
@@ -147,7 +147,9 @@ def userseesposts(request):
   retrieve the contents of the AllPosts model
   """
   
-  all_posts = AllPosts.objects.all()
+ 
+  all_posts = AllPosts.objects.all().reverse()
+
   
   accum=""
   counter=0
@@ -155,7 +157,7 @@ def userseesposts(request):
     counter+=1 
     accum=accum +(str(one_post))
    
- 
+   
   return render(request, "frontend/userseesposts.html", {'allofit': accum, 'count': counter})  
 
 
