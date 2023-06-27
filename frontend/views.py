@@ -31,17 +31,9 @@ def requrls(request): # This requests urls from the blog
 def admin_api(request): 
     
     def request_by_year(edate, sdate):
-        # Initially I did the entire request at once, but I had to chunk it into years because it was timing out in windows.    
-   
-
-        url = "https://www.googleapis.com/blogger/v3/blogs/4018409536126807518/posts/?"  + "startDate=" + sdate + "&fields=items(content%2Ctitle%2Curl)&key=AIzaSyBq-EPVMpROwsvmUWeo-AYAchzLuTpXLDk&maxResults=500"
-
-
-
-
-
-      
-
+        # Initially I did the entire request at once, but I had to chunk it into years because it was timing out in windows.  
+  
+        url = "https://www.googleapis.com/blogger/v3/blogs/4018409536126807518/posts/?" + "startDate=" + sdate + "&endDate=" + edate + "&fields=items(content%2Ctitle%2Curl)&key=AIzaSyBq-EPVMpROwsvmUWeo-AYAchzLuTpXLDk&maxResults=500"
         r = requests.get(url, stream=True)
         q = json.loads(r.text)            
         if not q:
@@ -52,15 +44,16 @@ def admin_api(request):
 
     accum_list = []  # this will become a list of dictionaries
     c_year = int(d.datetime.now().year)
-
-    for the_year in range(2022, c_year ):
+    
+    for the_year in range(2018, c_year +1 ):
         enddate = str(the_year) + "-12-31T00%3A00%3A00-00%3A00"
         startdate = str(the_year) + "-01-01T00%3A00%3A00-00%3A00"
         t = request_by_year(enddate, startdate)
-        accum_list = accum_list + t     
+        accum_list = accum_list + t      
     
     sorteditems = sorted(accum_list, key=itemgetter('title'))  
     sorteditems.reverse()
+   
     
     counter = 0
     newstring = " "
