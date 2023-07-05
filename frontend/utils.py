@@ -133,7 +133,5 @@ def search_func(user_terms):
     trimmed_list.sort(key=itemgetter(0)) # Sort by secondary key which will alphabetize the search terms
     trimmed_list.sort(key=itemgetter(-1), reverse=True) # Order and reverse the list 
     context={'count': count, 'trimmed_list': trimmed_list}      
-    return(context)
-
-   
+    return(context)  
  

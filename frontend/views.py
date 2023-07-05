@@ -21,69 +21,8 @@ def requrls(request): # This requests urls from the blog
  
  
 
-###################################################
-# This view GETS the posts using Google Blogger API and "request.get" for the admin and puts the results in a model  
-###################################################
-""" This view uses the Google Blogger API to retreive all the posts. All I needed was an API key.  Uses the blogger API and the requests module to get all the posts, and stores one recipe per record in the database
-""" 
  
-@user_passes_test(lambda user: user.is_superuser, login_url='/')
-def admin_api(request): 
-    
-    def request_by_year(edate, sdate):
-        # Initially I did the entire request at once, but I had to chunk it into years because it was timing out in windows.  
-  
-        url = "https://www.googleapis.com/blogger/v3/blogs/4018409536126807518/posts/?" + "startDate=" + sdate + "&endDate=" + edate + "&fields=items(content%2Ctitle%2Curl)&key=AIzaSyBq-EPVMpROwsvmUWeo-AYAchzLuTpXLDk&maxResults=500"
-        r = requests.get(url, stream=True)
-        q = json.loads(r.text)            
-        if not q:
-            s = []
-        else:            
-            s=q['items']             
-        return (s)
-
-    accum_list = []  # this will become a list of dictionaries
-    c_year = int(d.datetime.now().year)
-    
-    for the_year in range(2018, c_year +1 ):
-        enddate = str(the_year) + "-12-31T00%3A00%3A00-00%3A00"
-        startdate = str(the_year) + "-01-01T00%3A00%3A00-00%3A00"
-        t = request_by_year(enddate, startdate)
-        accum_list = accum_list + t      
-    
-    sorteditems = accum_list
-    #sorteditems.reverse()
-   
-    
-    counter = 0
-    newstring = " "
-    # Now we get ready to update the database
-    AllPosts.objects.all().delete()  # clear the table
- 
-    for mylink in sorteditems:
-         
-        counter += 1
-        newstring = "<a href=" + mylink['url'] + ">" + \
-            mylink['title'] + "</a>" + "<br>" + newstring
-            # Below, notice I stuff the title in with the body. It makes the title search part of the contents search.
-        newrec = AllPosts.objects.create(
-            title=mylink['title'],
-            hyperlink="<a href=" + mylink['url'] + ">" + mylink['title'] + "</a>" + "<br>",
-            url=mylink['url'],
-            fullpost=mylink['content']
-        )
-         
-        newrec.save()
-   
-          
-
-    return render(request, 'frontend/admin_api.html', {'allofit': newstring, 'count': counter})
-
- 
-
- 
-############# 
- 
+#############  
 @user_passes_test(lambda user: user.is_superuser, login_url='/')
 def admin_home(request):
   return render(request, "frontend/admin_home.html", {})
@@ -149,6 +88,7 @@ def userseesposts(request):
   
  
   all_posts = AllPosts.objects.all().reverse()
+  all_posts = AllPosts.objects.all() 
 
   
   accum=""
@@ -167,5 +107,77 @@ def userseesposts(request):
 ############# 
 # I might be able to use this for title and url as well. Just don't change the original finallposts
 ############# 
-   
+###################################################
+# This view GETS the posts using Google Blogger API and "request.get" for the admin and puts the results in a model  
+###################################################
+""" This view uses the Google Blogger API to retreive all the posts. All I needed was an API key.  Uses the blogger API and the requests module to get all the posts, and stores one recipe per record in the database
+""" 
  
+@user_passes_test(lambda user: user.is_superuser, login_url='/')
+def admin_api(request):  
+      
+ 
+    accum_list = []  # this will become a list of dictionaries
+    c_year = int(d.datetime.now().year)
+    
+    for the_year in range(2018, c_year +1 ):
+
+        base_url = "https://www.googleapis.com/blogger/v3/blogs/4018409536126807518/posts/?"
+        end_date = str(the_year) + "-12-31T00%3A00%3A00-00%3A00"
+        start_date = str(the_year) + "-01-01T00%3A00%3A00-00%3A00"
+        fields = "items(content%2Ctitle%2Curl)"
+        api_key = "AIzaSyBq-EPVMpROwsvmUWeo-AYAchzLuTpXLDk"
+        max_results = "500"
+
+        parameters = {
+           "startDate": start_date,
+           "endDate": end_date,
+           "fields": fields,
+           "key": api_key,
+           "maxResults": max_results
+          }
+
+        url = base_url + "&".join([f"{key}={value}" for key, value in parameters.items()])    
+        r = requests.get(url, stream=True)      
+        q = json.loads(r.text)            
+        if not q:
+            s = []
+        else:            
+            s=q['items']      
+        accum_list = accum_list + s      
+    sorteditems = accum_list
+    #sorteditems.reverse()
+   
+    
+    counter = 0
+    newstring = " "
+    # Now we get ready to update the database
+    AllPosts.objects.all().delete()  # clear the table 
+    for mylink in sorteditems:         
+        counter += 1
+        newstring = "<a href=" + mylink['url'] + ">" + \
+            mylink['title'] + "</a>" + "<br>" + newstring
+        # Below, notice I stuff the title in with the body. 
+        # It makes the title search part of the contents search.
+        newrec = AllPosts.objects.create(
+            title=mylink['title'],
+            hyperlink="<a href=" + mylink['url'] + ">" + mylink['title'] + "</a>" + "<br>",
+            url=mylink['url'],
+            fullpost=mylink['content']
+        )
+         
+        newrec.save()
+   
+          
+
+    return render(request, 'frontend/admin_api.html', {'allofit': newstring, 'count': counter})
+
+ 
+
+ 
+############# 
+ 
+   
+###################################################
+ 
+#############  
