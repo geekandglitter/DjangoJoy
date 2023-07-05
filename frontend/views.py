@@ -18,8 +18,6 @@ def is_superuser(user):
   return user.is_superuser
 def requrls(request): # This requests urls from the blog
   return render(request, "frontend/requrls.html", {})
- 
- 
 
  
 #############  
@@ -85,28 +83,17 @@ def userseesposts(request):
   """
   retrieve the contents of the AllPosts model
   """
-  
  
   all_posts = AllPosts.objects.all().reverse()
-  all_posts = AllPosts.objects.all() 
-
-  
+  all_posts = AllPosts.objects.all()   
   accum=""
   counter=0
   for one_post in all_posts:
     counter+=1 
-    accum=accum +(str(one_post))
+    accum=accum +(str(one_post))  
    
-   
-  return render(request, "frontend/userseesposts.html", {'allofit': accum, 'count': counter})  
-
-
-############# 
-############# 
-############# 
-############# 
-# I might be able to use this for title and url as well. Just don't change the original finallposts
-############# 
+  return render(request, "frontend/userseesposts.html", {'allofit': accum, 'count': counter})   
+ 
 ###################################################
 # This view GETS the posts using Google Blogger API and "request.get" for the admin and puts the results in a model  
 ###################################################
@@ -114,15 +101,18 @@ def userseesposts(request):
 """ 
  
 @user_passes_test(lambda user: user.is_superuser, login_url='/')
-def admin_api(request):  
-      
+def admin_api(request):        
  
     accum_list = []  # this will become a list of dictionaries
     c_year = int(d.datetime.now().year)
     
     for the_year in range(2018, c_year +1 ):
-
-        base_url = "https://www.googleapis.com/blogger/v3/blogs/4018409536126807518/posts/?"
+         
+        base_url = (
+         "https://www.googleapis.com/"
+         "blogger/v3/blogs/4018409536126807518/"
+         "posts/?"
+        )
         end_date = str(the_year) + "-12-31T00%3A00%3A00-00%3A00"
         start_date = str(the_year) + "-01-01T00%3A00%3A00-00%3A00"
         fields = "items(content%2Ctitle%2Curl)"
@@ -137,7 +127,8 @@ def admin_api(request):
            "maxResults": max_results
           }
 
-        url = base_url + "&".join([f"{key}={value}" for key, value in parameters.items()])    
+        url = base_url + "&".join([f"{key}={value}" \
+                                   for key, value in parameters.items()])    
         r = requests.get(url, stream=True)      
         q = json.loads(r.text)            
         if not q:
@@ -161,23 +152,15 @@ def admin_api(request):
         # It makes the title search part of the contents search.
         newrec = AllPosts.objects.create(
             title=mylink['title'],
-            hyperlink="<a href=" + mylink['url'] + ">" + mylink['title'] + "</a>" + "<br>",
+            hyperlink="<a href=" + mylink['url'] + ">" + \
+               mylink['title'] + "</a>" + "<br>",
             url=mylink['url'],
             fullpost=mylink['content']
-        )
-         
-        newrec.save()
-   
-          
-
-    return render(request, 'frontend/admin_api.html', {'allofit': newstring, 'count': counter})
-
- 
-
- 
-############# 
- 
+        )         
+        newrec.save() 
+    return render(request, 'frontend/admin_api.html', \
+                  {'allofit': newstring, 'count': counter}) 
    
 ###################################################
  
-#############  
+ 
