@@ -106,12 +106,11 @@ def admin_api(request):
     accum_list = []  # this will become a list of dictionaries
     c_year = int(d.datetime.now().year)
     
-    for the_year in range(2018, c_year +1 ):
-         
+    for the_year in range(2017, c_year +1 ):
+        from django.conf import settings 
         base_url = (
          "https://www.googleapis.com/"
-         "blogger/v3/blogs/4018409536126807518/"
-         "posts/?"
+         "blogger/v3/blogs/" + settings.THE_BLOG_ID + "posts/?"
         )
         end_date = str(the_year) + "-12-31T00%3A00%3A00-00%3A00"
         start_date = str(the_year) + "-01-01T00%3A00%3A00-00%3A00"
