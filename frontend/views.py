@@ -2,8 +2,7 @@ from django.shortcuts import render
 import requests 
 import json
 import datetime as d
-from .models import AllPosts
-from operator import itemgetter
+from .models import AllPosts 
 from django.contrib.auth.decorators import user_passes_test 
 from frontend.utils import search_func # this function does the model query heavy lifting for modelsearch_view 
 from .forms import UserForm 
@@ -54,8 +53,7 @@ def usersearch(request):
             # Now I also have to handle any duplicate commas           
             user_string_parts = form.data['user_search_terms'].split(',') 
             user_string_parts = [part.strip() for part in user_string_parts ]
-            #while("" in user_string_parts) :  # THis while loop doesn't look necessary
-            #    user_string_parts.remove("")                
+                  
             form.data['user_search_terms'] = (', '.join(user_string_parts) )   
 
 
@@ -147,8 +145,7 @@ def admin_api(request):
         counter += 1
         newstring = "<a href=" + mylink['url'] + ">" + \
             mylink['title'] + "</a>" + "<br>" + newstring
-        # Below, notice I stuff the title in with the body. 
-        # It makes the title search part of the contents search.
+        
         newrec = AllPosts.objects.create(
             title=mylink['title'],
             hyperlink="<a href=" + mylink['url'] + ">" + \
