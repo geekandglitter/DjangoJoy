@@ -2,8 +2,7 @@ from django.shortcuts import render
 import requests 
 import json
 import datetime as d
-from .models import AllPosts
-#from operator import itemgetter
+from .models import AllPosts 
 from django.contrib.auth.decorators import user_passes_test 
 from frontend.utils import search_func # this function does the model query heavy lifting for modelsearch_view 
 from .forms import UserForm 
@@ -54,11 +53,11 @@ def usersearch(request):
             # Now I also have to handle any duplicate commas           
             user_string_parts = form.data['user_search_terms'].split(',') 
             user_string_parts = [part.strip() for part in user_string_parts ]
-                             
+                  
             form.data['user_search_terms'] = (', '.join(user_string_parts) )   
 
 
-             
+            # Next, run it thorugh modelform validation, then call my search_func to do all the query heavy lifting
             if form.is_valid():    
                 cd = form.cleaned_data  # Clean the user input
                 user_terms = cd['user_search_terms']  # See forms.py
@@ -93,9 +92,11 @@ def userseesposts(request):
    
   return render(request, "frontend/userseesposts.html", {'allofit': accum, 'count': counter})   
  
-################################################
+###################################################
 # This view GETS the posts using Google Blogger API and "request.get" for the admin and puts the results in a model  
-# ################################################
+###################################################
+""" This view uses the Google Blogger API to retreive all the posts. All I needed was an API key.  Uses the blogger API and the requests module to get all the posts, and stores one recipe per record in the database
+""" 
  
 @user_passes_test(lambda user: user.is_superuser, login_url='/')
 def admin_api(request):        
@@ -109,7 +110,6 @@ def admin_api(request):
          "https://www.googleapis.com/"
          "blogger/v3/blogs/" + settings.THE_BLOG_ID + "posts/?"
         )
-         
         end_date = str(the_year) + "-12-31T00%3A00%3A00-00%3A00"
         start_date = str(the_year) + "-01-01T00%3A00%3A00-00%3A00"
         fields = "items(content%2Ctitle%2Curl)"
@@ -145,7 +145,7 @@ def admin_api(request):
         counter += 1
         newstring = "<a href=" + mylink['url'] + ">" + \
             mylink['title'] + "</a>" + "<br>" + newstring
-       
+        
         newrec = AllPosts.objects.create(
             title=mylink['title'],
             hyperlink="<a href=" + mylink['url'] + ">" + \
@@ -158,4 +158,5 @@ def admin_api(request):
                   {'allofit': newstring, 'count': counter}) 
    
 ###################################################
+ 
  

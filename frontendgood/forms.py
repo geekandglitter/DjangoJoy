@@ -18,7 +18,7 @@ class UserForm(forms.ModelForm):
         widgets = {  
                     'user_search_terms': 
                     forms.Textarea
-                    (attrs={'rows':2, 'cols':60,'placeholder': 'examples: sleep disorder, PASC, clinical trials, sleep onset, spoon theory '}),
+                    (attrs={'rows':2, 'cols':60,'placeholder': 'examples: REST API, Blogger, chatgpt, repl.it, migrations '}),
                      
                   }
       
