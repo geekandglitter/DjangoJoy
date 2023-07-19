@@ -7,9 +7,6 @@ from .models import AllPosts
 from django.contrib.auth.decorators import user_passes_test 
 from frontend.utils import search_func # this function does the model query heavy lifting for modelsearch_view 
 from .forms import UserForm 
- 
-
-
 
  
 def index(request):
@@ -19,13 +16,15 @@ def is_superuser(user):
 def requrls(request): # This requests urls from the blog
   return render(request, "frontend/requrls.html", {})
 
- 
 #############  
 @user_passes_test(lambda user: user.is_superuser, login_url='/')
 def admin_home(request):
+  if not request.user.is_superuser:
+    return redirect("/")
   return render(request, "frontend/admin_home.html", {})
 
-############# 
+
+#############  
 def usersearch(request):
     '''      
     Below I query using values_list(). The alternative would have been values() which creates a nice dictionary,
@@ -56,8 +55,6 @@ def usersearch(request):
             user_string_parts = [part.strip() for part in user_string_parts ]
                              
             form.data['user_search_terms'] = (', '.join(user_string_parts) )   
-
-
              
             if form.is_valid():    
                 cd = form.cleaned_data  # Clean the user input
@@ -76,15 +73,17 @@ def usersearch(request):
         context = {'form': form}     
     return render(request, 'frontend/usersearch.html', context) 
 
-
 ############# 
 def userseesposts(request):
   """
   retrieve the contents of the AllPosts model
   """
  
-  all_posts = AllPosts.objects.all().reverse()
-  all_posts = AllPosts.objects.all()   
+  try:
+    all_posts = AllPosts.objects.all().reverse()
+    all_posts = AllPosts.objects.all()   
+  except:
+    return render(request, "frontend/userseesposts.html", {'allofit': "", 'count': 0})   
   accum=""
   counter=0
   for one_post in all_posts:
@@ -92,6 +91,7 @@ def userseesposts(request):
     accum=accum +(str(one_post))  
    
   return render(request, "frontend/userseesposts.html", {'allofit': accum, 'count': counter})   
+
  
 ################################################
 # This view GETS the posts using Google Blogger API and "request.get" for the admin and puts the results in a model  
@@ -126,13 +126,16 @@ def admin_api(request):
 
         url = base_url + "&".join([f"{key}={value}" \
                                    for key, value in parameters.items()])    
-        r = requests.get(url, stream=True)      
-        q = json.loads(r.text)            
-        if not q:
-            s = []
-        else:            
-            s=q['items']      
-        accum_list = accum_list + s      
+        try:
+            r = requests.get(url, stream=True)      
+            q = json.loads(r.text)            
+            if not q:
+                s = []
+            else:            
+                s=q['items']      
+            accum_list = accum_list + s      
+        except:
+            print("Error in getting data")
     sorteditems = accum_list
     #sorteditems.reverse()
    
@@ -155,7 +158,8 @@ def admin_api(request):
         )         
         newrec.save() 
     return render(request, 'frontend/admin_api.html', \
-                  {'allofit': newstring, 'count': counter}) 
+                  {'allofit': newstring, 'count': counter})
+ 
    
 ###################################################
  
